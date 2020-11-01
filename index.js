@@ -102,7 +102,22 @@ const storage = multer.diskStorage({
     cb(null, fullName);
   },
 });
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 2000000 }, // file size two milion bytes are allowed
+  fileFilter: function (req, file, cb) {
+    // filter file when it is needed
+    const fileTypes = /png|jpeg|jpg/;
+    const extName = fileTypes.test(path.extname(file.originalname));
+    file.originalname.toLowerCase();
+    const mimeType = fileTypes.test(file.mimetype);
+    if (extName && mimeType) {
+      cb(null, true);
+    } else {
+      cb("Error: only png, jpeg, and jpg are allowed!");
+    }
+  },
+});
 
 // POST /blogs/upload/:id
 app.post("/blogs/upload/:id", upload.single("photo"), async (req, res) => {
